@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizVerse & ExamPrep Pro</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.8); }
+        .glassmorphic {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .light .glassmorphic {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        @keyframes pulse-fire {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px #f97316); }
+            50% { transform: scale(1.15); filter: drop-shadow(0 0 12px #ef4444); }
+        }
+        .fire-anim { animation: pulse-fire 1.8s infinite ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 light:bg-slate-50 light:text-slate-900" id="appBody">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 dark:bg-slate-900/90 light:bg-white/90 border-b border-slate-800 dark:border-slate-800 light:border-slate-200 backdrop-blur-md px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">QuizVerse</h1>
+                    <p class="text-xs text-slate-400 font-medium">ExamPrep Pro Portal</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar (Streak, XP, Sound, Dark Mode) -->
+            <div class="flex items-center space-x-3 sm:space-x-6">
+                <!-- Daily Streak Badge -->
+                <div title="Daily Check-in Streak" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-sm font-semibold cursor-pointer hover:bg-amber-500/20 transition-all" onclick="claimDailyStreak()">
+                    <i class="fa-solid fa-fire text-amber-500 fire-anim"></i>
+                    <span id="streakDisplay">0</span> <span class="hidden sm:inline text-xs font-normal opacity-80">Days</span>
+                </div>
+
+                <!-- User Level & XP -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-sm font-semibold">
+                    <i class="fa-solid fa-bolt text-indigo-400"></i>
+                    <span id="userLevelBadge" class="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-md font-extrabold uppercase">Lvl 1</span>
+                    <span id="xpDisplay" class="text-xs">0 XP</span>
+                </div>
+
+                <!-- Sound Toggle -->
+                <button id="soundToggleBtn" onclick="toggleSound()" class="p-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition" title="Toggle Sound FX">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-lg"></i>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition" title="Toggle Light/Dark Theme">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN NAVIGATION TABS -->
+    <nav class="bg-slate-900/60 dark:bg-slate-900/60 light:bg-slate-200/80 border-b border-slate-800 dark:border-slate-800 light:border-slate-300 px-4">
+        <div class="max-w-7xl mx-auto flex items-center overflow-x-auto space-x-1 sm:space-x-2 py-2 no-scrollbar">
+            <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 whitespace-nowrap text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+                <i class="fa-solid fa-compass"></i><span>Explore & Prepare</span>
+            </button>
+            <button onclick="navigateTo('analytics')" id="nav-analytics" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i class="fa-solid fa-chart-line"></i><span>Performance & Analytics</span>
+            </button>
+            <button onclick="navigateTo('shop')" id="nav-shop" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i class="fa-solid fa-store"></i><span>Rewards Shop</span>
+            </button>
+            <button onclick="navigateTo('leaderboard')" id="nav-leaderboard" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i class="fa-solid fa-trophy"></i><span>Leaderboard</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT CONTAINERS -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="space-y-8">
+            <!-- Welcome Banner -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 p-6 sm:p-8 border border-indigo-500/20 shadow-2xl">
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 border border-indigo-400/30 text-indigo-300">
+                        <i class="fa-solid fa-sparkles"></i> Adaptive Learning Portal
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">Master Exams with Confidence</h2>
+                    <p class="text-slate-300 text-sm sm:text-base">Targeted competitive exam simulations, instant solution breakdowns, real-time metrics, and gamified study tracks.</p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <button onclick="quickStartQuiz()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold shadow-lg shadow-indigo-500/25 transition transform active:scale-95 flex items-center space-x-2">
+                            <i class="fa-solid fa-bolt"></i><span>Quick Practice Test</span>
+                        </button>
+                        <button onclick="claimDailyStreak()" class="px-5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold transition flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-check text-amber-400"></i><span>Daily Check-in Bonus</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="absolute right-0 bottom-0 top-0 hidden lg:block w-1/3 opacity-20 pointer-events-none bg-contain bg-no-repeat bg-right" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23818cf8\'><path d=\'M12 2L1 21h22L12 2zm0 3.83L19.17 19H4.83L12 5.83z\'/></svg>');"></div>
+            </div>
+
+            <!-- Exam Category Filter -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-indigo-400"></i> Select Exam Target
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="filterCategories('all')" class="cat-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white">All</button>
+                        <button onclick="filterCategories('competitive')" class="cat-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white">Competitive</button>
+                        <button onclick="filterCategories('tech')" class="cat-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white">Tech & IT</button>
+                        <button onclick="filterCategories('general')" class="cat-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white">General</button>
+                    </div>
+                </div>
+
+                <!-- Category Cards Grid -->
+                <div id="categoryCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <!-- Dynamic rendering by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. QUIZ & EXAM INTERFACE (TIMED / PRACTICE) -->
+        <section id="view-quiz" class="hidden space-y-6">
+            <!-- Exam Top Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span id="quizBadgeCategory" class="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">JEE Physics</span>
+                        <span id="quizBadgeMode" class="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">Exam Mode</span>
+                    </div>
+                    <h2 id="quizTitleDisplay" class="text-xl font-bold text-slate-100 mt-1">Full Length Physics Test</h2>
+                </div>
+
+                <!-- Timer & Controls -->
+                <div class="flex items-center space-x-4">
+                    <div id="quizTimerContainer" class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-mono text-lg font-bold">
+                        <i class="fa-regular fa-clock text-indigo-400"></i>
+                        <span id="quizTimerText">15:00</span>
+                    </div>
+                    <button onclick="confirmSubmitQuiz()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition shadow-lg shadow-emerald-600/20 flex items-center space-x-2">
+                        <i class="fa-solid fa-paper-plane"></i><span>Submit Test</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Main Grid (Question Box + Question Palette Sidebar) -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Left: Question Panel (3 cols) -->
+                <div class="lg:col-span-3 space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative min-h-[400px] flex flex-col justify-between">
+                        <div>
+                            <!-- Question Header -->
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+                                <span class="text-sm font-semibold text-slate-400" id="questionNumberIndicator">Question 1 of 10</span>
+                                <span class="text-xs px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-medium" id="questionMarksIndicator">+4 Marks | -1 Negative</span>
+                            </div>
+
+                            <!-- Question Text -->
+                            <div class="space-y-4">
+                                <h3 id="questionText" class="text-lg sm:text-xl font-semibold text-slate-100 leading-relaxed">
+                                    Loading question...
+                                </h3>
+                                <div id="optionsContainer" class="space-y-3 pt-2">
+                                    <!-- Dynamic Options Loaded Here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instant Explanation (Practice Mode Only) -->
+                        <div id="explanationBox" class="hidden mt-6 p-4 rounded-xl bg-indigo-950/40 border border-indigo-800/50 text-slate-300 text-sm">
+                            <div class="font-bold text-indigo-400 mb-1 flex items-center gap-2">
+                                <i class="fa-solid fa-lightbulb"></i> Solution Explanation:
+                            </div>
+                            <p id="explanationText">Explanation will appear here.</p>
+                        </div>
+
+                        <!-- Navigation Footer Buttons -->
+                        <div class="border-t border-slate-800 pt-5 mt-6 flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex gap-2">
+                                <button onclick="markForReview()" class="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs sm:text-sm font-semibold transition">
+                                    <i class="fa-solid fa-bookmark mr-1"></i> Mark for Review
+                                </button>
+                                <button onclick="clearResponse()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs sm:text-sm font-medium transition">
+                                    Clear Response
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="prevQuestion()" id="prevBtn" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                                </button>
+                                <button onclick="nextQuestion()" id="nextBtn" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/30 transition">
+                                    Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Question Palette Sidebar (1 col) -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                        <h4 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-4 border-b border-slate-800 pb-2">Question Palette</h4>
+                        
+                        <!-- Legend Grid -->
+                        <div class="grid grid-cols-2 gap-2 text-xs text-slate-400 mb-5">
+                            <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-slate-700 inline-block"></span><span>Not Visited</span></div>
+                            <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span>Answered</span></div>
+                            <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span><span>Unanswered</span></div>
+                            <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span><span>Review</span></div>
+                        </div>
+
+                        <!-- Grid Numbers -->
+                        <div id="paletteGrid" class="grid grid-cols-5 gap-2 max-h-64 overflow-y-auto pr-1">
+                            <!-- JS Palette Buttons -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. SCORECARD & TEST REPORT VIEW -->
+        <section id="view-results" class="hidden space-y-8">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
+                <!-- Result Summary Banner -->
+                <div class="text-center space-y-2 border-b border-slate-800 pb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/10 text-indigo-400 text-3xl mb-2">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-white">Test Completed!</h2>
+                    <p class="text-slate-400 text-sm" id="resultTestTitle">JEE Physics Practice Test</p>
+                </div>
+
+                <!-- Stats Overview Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 text-center">
+                        <div class="text-xs text-slate-400 uppercase font-semibold">Total Score</div>
+                        <div id="resultScore" class="text-2xl font-black text-indigo-400 mt-1">0 / 0</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 text-center">
+                        <div class="text-xs text-slate-400 uppercase font-semibold">Accuracy</div>
+                        <div id="resultAccuracy" class="text-2xl font-black text-emerald-400 mt-1">0%</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 text-center">
+                        <div class="text-xs text-slate-400 uppercase font-semibold">Time Spent</div>
+                        <div id="resultTimeSpent" class="text-2xl font-black text-amber-400 mt-1">00:00</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 text-center">
+                        <div class="text-xs text-slate-400 uppercase font-semibold">XP Earned</div>
+                        <div id="resultXPEarned" class="text-2xl font-black text-purple-400 mt-1">+0 XP</div>
+                    </div>
+                </div>
+
+                <!-- Detail Breakdown & Solutions List -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-slate-200 border-b border-slate-800 pb-2">Detailed Solution Review</h3>
+                    <div id="solutionsReviewList" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-4 pt-4">
+                    <button onclick="navigateTo('dashboard')" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition">
+                        Return to Dashboard
+                    </button>
+                    <button onclick="navigateTo('analytics')" class="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition">
+                        View Overall Analytics
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ANALYTICS & HISTORY VIEW -->
+        <section id="view-analytics" class="hidden space-y-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-100">Performance Analytics</h2>
+                    <p class="text-sm text-slate-400">Track accuracy trends, subject mastery, and history logs.</p>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Accuracy Trend Chart Container -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-indigo-400"></i> Recent Test Accuracy (%)
+                    </h3>
+                    <div class="h-64 flex items-center justify-center" id="accuracyChartContainer">
+                        <!-- Dynamic SVG Line Chart -->
+                    </div>
+                </div>
+
+                <!-- Subject Mastery Breakdowns -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                    <h3 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-pink-400"></i> Subject Proficiency Breakdown
+                    </h3>
+                    <div id="subjectProficiencyList" class="space-y-3">
+                        <!-- JS Progress bars -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Log Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <h3 class="text-md font-bold text-slate-200">Past Quiz Attempts</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-800/60 text-xs uppercase text-slate-400">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">Date</th>
+                                <th class="p-3">Quiz Name</th>
+                                <th class="p-3">Category</th>
+                                <th class="p-3">Score</th>
+                                <th class="p-3">Accuracy</th>
+                                <th class="p-3 rounded-r-lg">XP Earned</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-800">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. REWARDS & XP SHOP -->
+        <section id="view-shop" class="hidden space-y-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-100">Virtual Rewards Shop</h2>
+                    <p class="text-sm text-slate-400">Redeem hard-earned XP for streak freezes, themes, and avatars.</p>
+                </div>
+                <div class="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-bold text-sm">
+                    Balance: <span id="shopXPBalance">0</span> XP
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="shopItemsGrid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- 6. LEADERBOARD VIEW -->
+        <section id="view-leaderboard" class="hidden space-y-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-100">Global Leaderboard</h2>
+                    <p class="text-sm text-slate-400">See where you rank against top exam aspirants worldwide.</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div id="leaderboardList" class="space-y-3">
+                    <!-- Dynamic rendering by JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- GENERAL NOTIFICATION TOAST -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-3 px-5 py-3 rounded-xl bg-slate-900 border border-indigo-500/50 shadow-2xl text-slate-100 text-sm">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-indigo-400 text-lg"></i>
+        <span id="toastMsg">Action successfully completed!</span>
+    </div>
+
+    <!-- APPLICATION JAVASCRIPT LOGIC -->
+    <script>
+        /* ==========================================================================
+           QUESTION BANK DATASET
+           ========================================================================== */
+        const quizCategories = [
+            {
+                id: 'jee-physics',
+                title: 'JEE / NEET Physics',
+                category: 'competitive',
+                icon: 'fa-atom',
+                color: 'from-blue-600 to-indigo-600',
+                questions: [
+                    {
+                        q: "A particle moves in a circle of radius R with constant speed v. What is the magnitude of average acceleration during half a revolution?",
+                        options: ["2v² / (πR)", "v² / R", "v² / (2πR)", "Zero"],
+                        correct: 0,
+                        explanation: "Change in velocity during half revolution = 2v. Time taken = πR/v. Avg acceleration = (2v) / (πR/v) = 2v² / (πR)."
+                    },
+                    {
+                        q: "The work done in pulling a spring of stiffness k from elongation x1 to x2 is:",
+                        options: ["1/2 k (x2 - x1)²", "1/2 k (x2² - x1²)", "k (x2 - x1)", "1/2 k (x2 + x1)²"],
+                        correct: 1,
+                        explanation: "Work done W = ∫ k x dx from x1 to x2 = 1/2 k (x2² - x1²)."
+                    },
+                    {
+                        q: "Dimensional formula for Universal Gravitational Constant (G) is:",
+                        options: ["[M⁻¹ L³ T⁻²]", "[M¹ L² T⁻²]", "[M⁻² L³ T⁻¹]", "[M⁻¹ L² T⁻²]"],
+                        correct: 0,
+                        explanation: "F = G m1 m2 / r² => G = F r² / (m1 m2). [G] = [M L T⁻²][L²] / [M²] = [M⁻¹ L³ T⁻²]."
+                    }
+                ]
+            },
+            {
+                id: 'upsc-polity',
+                title: 'UPSC General Studies: Polity',
+                category: 'competitive',
+                icon: 'fa-landmark',
+                color: 'from-amber-600 to-orange-600',
+                questions: [
+                    {
+                        q: "Which Article of the Indian Constitution empowers the Parliament to amend the Constitution?",
+                        options: ["Article 352", "Article 360", "Article 368", "Article 370"],
+                        correct: 2,
+                        explanation: "Article 368 in Part XX of the Constitution deals with the powers of Parliament to amend the Constitution and its procedure."
+                    },
+                    {
+                        q: "The Fundamental Duties were incorporated into the Indian Constitution on the recommendation of which committee?",
+                        options: ["Sarkaria Commission", "Swaran Singh Committee", "Verma Committee", "Kothari Commission"],
+                        correct: 1,
+                        explanation: "The Swaran Singh Committee recommended the inclusion of Fundamental Duties in 1976 (42nd Amendment Act)."
+                    }
+                ]
+            },
+            {
+                id: 'ssc-aptitude',
+                title: 'Bank PO / SSC Quant Aptitude',
+                category: 'competitive',
+                icon: 'fa-calculator',
+                color: 'from-emerald-600 to-teal-600',
+                questions: [
+                    {
+                        q: "If A can complete a work in 12 days and B in 15 days, working together how many days will they take?",
+                        options: ["6.67 days", "7.5 days", "6 days", "8 days"],
+                        correct: 0,
+                        explanation: "Combined rate = 1/12 + 1/15 = 9/60 = 3/20. Total days = 20/3 ≈ 6.67 days."
+                    },
+                    {
+                        q: "The simplified value of (0.2 x 0.2 + 0.02 x 0.02 - 0.4 x 0.02) is:",
+                        options: ["0.0324", "0.04", "0.36", "0.018"],
+                        correct: 0,
+                        explanation: "Form of (a - b)² where a = 0.2 and b = 0.02. (0.2 - 0.02)² = (0.18)² = 0.0324."
+                    }
+                ]
+            },
+            {
+                id: 'tech-webdev',
+                title: 'Full-Stack Web Dev (React & JS)',
+                category: 'tech',
+                icon: 'fa-code',
+                color: 'from-purple-600 to-pink-600',
+                questions: [
+                    {
+                        q: "Which Hook in React is used to perform side effects in functional components?",
+                        options: ["useState", "useContext", "useEffect", "useReducer"],
+                        correct: 2,
+                        explanation: "useEffect lets you synchronize a component with an external system and execute side effects."
+                    },
+                    {
+                        q: "What will `console.log(typeof NaN)` output in Javascript?",
+                        options: ["'number'", "'NaN'", "'undefined'", "'object'"],
+                        correct: 0,
+                        explanation: "In JavaScript, NaN (Not-a-Number) is technically classified as a numeric type ('number')."
+                    }
+                ]
+            },
+            {
+                id: 'tech-python',
+                title: 'Python Data Science & ML',
+                category: 'tech',
+                icon: 'fa-python',
+                color: 'from-sky-600 to-blue-600',
+                questions: [
+                    {
+                        q: "Which library is primary in Python for fast numerical array manipulations?",
+                        options: ["Pandas", "NumPy", "Matplotlib", "Scikit-Learn"],
+                        correct: 1,
+                        explanation: "NumPy provides support for large multidimensional arrays and high-level mathematical functions."
+                    }
+                ]
+            },
+            {
+                id: 'general-trivia',
+                title: 'General Knowledge & Science',
+                category: 'general',
+                icon: 'fa-earth-americas',
+                color: 'from-rose-600 to-red-600',
+                questions: [
+                    {
+                        q: "Which gas is most abundant in Earth's atmosphere?",
+                        options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"],
+                        correct: 2,
+                        explanation: "Nitrogen makes up approximately 78% of Earth's atmosphere."
+                    }
+                ]
+            }
+        ];
+
+        /* ==========================================================================
+           AUDIO SYNTHESIZER (WEB AUDIO API)
+           ========================================================================== */
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now); // A3
+                    osc.frequency.setValueAtTime(180, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'win') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(880, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                }
+            } catch (e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            icon.className = soundEnabled ? "fa-solid fa-volume-high text-lg" : "fa-solid fa-volume-xmark text-lg text-slate-500";
+            showToast(soundEnabled ? "Sound enabled" : "Sound muted");
+        }
+
+        /* ==========================================================================
+           APPLICATION STATE & LOCAL STORAGE
+           ========================================================================== */
+        let state = {
+            streak: 0,
+            lastStreakDate: null,
+            xp: 0,
+            level: 1,
+            unlockedItems: [],
+            history: []
+        };
+
+        let currentQuiz = {
+            categoryObj: null,
+            mode: 'exam', // 'exam' or 'practice'
+            questions: [],
+            answers: {}, // index -> chosen option
+            reviewMarks: {}, // index -> boolean
+            visited: {}, // index -> boolean
+            currentIndex: 0,
+            timeRemaining: 0,
+            timerInterval: null,
+            startTime: null
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('quizverse_state');
+            if (saved) {
+                try {
+                    state = Object.assign(state, JSON.parse(saved));
+                } catch (e) {}
+            }
+            updateUserHeaderUI();
+        }
+
+        function saveState() {
+            localStorage.setItem('quizverse_state', JSON.stringify(state));
+            updateUserHeaderUI();
+        }
+
+        function updateUserHeaderUI() {
+            // Level formula: level = 1 + floor(xp / 100)
+            state.level = Math.floor(state.xp / 100) + 1;
+            document.getElementById('streakDisplay').innerText = state.streak;
+            document.getElementById('xpDisplay').innerText = state.xp + " XP";
+            document.getElementById('userLevelBadge').innerText = "Lvl " + state.level;
+            const shopBal = document.getElementById('shopXPBalance');
+            if (shopBal) shopBal.innerText = state.xp;
+        }
+
+        /* ==========================================================================
+           NAVIGATION & VIEW SWITCHING
+           ========================================================================== */
+        function navigateTo(viewId) {
+            playSound('click');
+            const views = ['dashboard', 'quiz', 'results', 'analytics', 'shop', 'leaderboard'];
+            views.forEach(v => {
+                const el = document.getElementById('view-' + v);
+                if (el) el.classList.add('hidden');
+                const navBtn = document.getElementById('nav-' + v);
+                if (navBtn) {
+                    navBtn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 whitespace-nowrap text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+                }
+            });
+
+            const targetView = document.getElementById('view-' + viewId);
+            if (targetView) targetView.classList.remove('hidden');
+
+            const activeNav = document.getElementById('nav-' + viewId);
+            if (activeNav) {
+                activeNav.className = "nav-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 whitespace-nowrap text-indigo-400 bg-indigo-500/10 border border-indigo-500/20";
+            }
+
+            if (viewId === 'analytics') renderAnalytics();
+            if (viewId === 'shop') renderShop();
+            if (viewId === 'leaderboard') renderLeaderboard();
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = 'fa-solid fa-sun text-lg text-amber-400';
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-moon text-lg';
+            }
+        }
+
+        /* ==========================================================================
+           DASHBOARD & CATEGORIES
+           ========================================================================== */
+        function renderCategories(filter = 'all') {
+            const grid = document.getElementById('categoryCardsGrid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'all' ? quizCategories : quizCategories.filter(c => c.category === filter);
+
+            filtered.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group";
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${cat.color} flex items-center justify-center text-white text-xl shadow-lg">
+                            <i class="fa-solid ${cat.icon}"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-100 group-hover:text-indigo-400 transition">${cat.title}</h4>
+                        <p class="text-xs text-slate-400">${cat.questions.length} High-yield questions with full solutions.</p>
+                    </div>
+                    <div class="pt-5 flex gap-2">
+                        <button onclick="startQuiz('${cat.id}', 'exam')" class="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition">
+                            Exam Mode
+                        </button>
+                        <button onclick="startQuiz('${cat.id}', 'practice')" class="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition">
+                            Practice
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCategories(cat) {
+            playSound('click');
+            document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+                btn.className = "cat-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white";
+            });
+            event.target.className = "cat-filter-btn px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white";
+            renderCategories(cat);
+        }
+
+        function quickStartQuiz() {
+            const randomCat = quizCategories[Math.floor(Math.random() * quizCategories.length)];
+            startQuiz(randomCat.id, 'exam');
+        }
+
+        /* ==========================================================================
+           QUIZ ENGINE & TIMERS
+           ========================================================================== */
+        function startQuiz(catId, mode) {
+            playSound('click');
+            const category = quizCategories.find(c => c.id === catId);
+            if (!category) return;
+
+            currentQuiz = {
+                categoryObj: category,
+                mode: mode,
+                questions: category.questions,
+                answers: {},
+                reviewMarks: {},
+                visited: { 0: true },
+                currentIndex: 0,
+                timeRemaining: category.questions.length * 60, // 60 sec per question
+                timerInterval: null,
+                startTime: new Date()
+            };
+
+            document.getElementById('quizTitleDisplay').innerText = category.title;
+            document.getElementById('quizBadgeCategory').innerText = category.category;
+            document.getElementById('quizBadgeMode').innerText = mode.toUpperCase() + " MODE";
+
+            navigateTo('quiz');
+            startTimer();
+            renderQuestion();
+            renderPalette();
+        }
+
+        function startTimer() {
+            if (currentQuiz.timerInterval) clearInterval(currentQuiz.timerInterval);
+
+            const timerDisplay = document.getElementById('quizTimerText');
+            
+            currentQuiz.timerInterval = setInterval(() => {
+                currentQuiz.timeRemaining--;
+                const mins = Math.floor(currentQuiz.timeRemaining / 60);
+                const secs = currentQuiz.timeRemaining % 60;
+                timerDisplay.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (currentQuiz.timeRemaining <= 30) {
+                    timerDisplay.parentElement.classList.add('text-rose-500', 'animate-pulse');
+                }
+
+                if (currentQuiz.timeRemaining <= 0) {
+                    clearInterval(currentQuiz.timerInterval);
+                    showToast("Time expired! Submitting test...");
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const idx = currentQuiz.currentIndex;
+            const qData = currentQuiz.questions[idx];
+            currentQuiz.visited[idx] = true;
+
+            document.getElementById('questionNumberIndicator').innerText = `Question ${idx + 1} of ${currentQuiz.questions.length}`;
+            document.getElementById('questionText').innerText = qData.q;
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            qData.options.forEach((optText, oIdx) => {
+                const isSelected = currentQuiz.answers[idx] === oIdx;
+                const optBtn = document.createElement('button');
+                optBtn.className = `w-full text-left p-4 rounded-xl border transition flex items-center justify-between ${
+                    isSelected 
+                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-200' 
+                    : 'bg-slate-800/40 border-slate-700/60 hover:bg-slate-800 text-slate-300'
+                }`;
+                optBtn.onclick = () => selectOption(oIdx);
+                optBtn.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'} flex items-center justify-center font-bold text-xs">
+                            ${String.fromCharCode(65 + oIdx)}
+                        </span>
+                        <span class="text-sm font-medium">${optText}</span>
+                    </div>
+                    ${isSelected ? '<i class="fa-solid fa-circle-check text-indigo-400"></i>' : ''}
+                `;
+                container.appendChild(optBtn);
+            });
+
+            // Explanation for Practice Mode
+            const expBox = document.getElementById('explanationBox');
+            if (currentQuiz.mode === 'practice' && currentQuiz.answers[idx] !== undefined) {
+                expBox.classList.remove('hidden');
+                document.getElementById('explanationText').innerText = qData.explanation;
+            } else {
+                expBox.classList.add('hidden');
+            }
+
+            // Button States
+            document.getElementById('prevBtn').disabled = idx === 0;
+            document.getElementById('nextBtn').innerText = idx === currentQuiz.questions.length - 1 ? 'Finish' : 'Next';
+
+            renderPalette();
+        }
+
+        function selectOption(optionIndex) {
+            playSound('click');
+            const idx = currentQuiz.currentIndex;
+            currentQuiz.answers[idx] = optionIndex;
+            renderQuestion();
+        }
+
+        function clearResponse() {
+            playSound('click');
+            const idx = currentQuiz.currentIndex;
+            delete currentQuiz.answers[idx];
+            renderQuestion();
+        }
+
+        function markForReview() {
+            playSound('click');
+            const idx = currentQuiz.currentIndex;
+            currentQuiz.reviewMarks[idx] = !currentQuiz.reviewMarks[idx];
+            renderPalette();
+        }
+
+        function prevQuestion() {
+            if (currentQuiz.currentIndex > 0) {
+                currentQuiz.currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuiz.currentIndex < currentQuiz.questions.length - 1) {
+                currentQuiz.currentIndex++;
+                renderQuestion();
+            } else {
+                confirmSubmitQuiz();
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            playSound('click');
+            currentQuiz.currentIndex = idx;
+            renderQuestion();
+        }
+
+        function renderPalette() {
+            const palette = document.getElementById('paletteGrid');
+            palette.innerHTML = '';
+
+            currentQuiz.questions.forEach((_, idx) => {
+                const btn = document.createElement('button');
+                let colorClass = "bg-slate-800 text-slate-400"; // default unvisited
+
+                const isAnswered = currentQuiz.answers[idx] !== undefined;
+                const isMarked = currentQuiz.reviewMarks[idx];
+                const isVisited = currentQuiz.visited[idx];
+
+                if (isMarked) colorClass = "bg-amber-500 text-white";
+                else if (isAnswered) colorClass = "bg-emerald-600 text-white";
+                else if (isVisited) colorClass = "bg-rose-500/80 text-white";
+
+                const isCurrent = idx === currentQuiz.currentIndex;
+
+                btn.className = `h-9 rounded-lg font-bold text-xs flex items-center justify-center transition border ${colorClass} ${
+                    isCurrent ? 'ring-2 ring-indigo-400 border-white' : 'border-transparent'
+                }`;
+                btn.innerText = idx + 1;
+                btn.onclick = () => jumpToQuestion(idx);
+                palette.appendChild(btn);
+            });
+        }
+
+        function confirmSubmitQuiz() {
+            if (confirm("Are you sure you want to finish and submit this test?")) {
+                submitQuiz();
+            }
+        }
+
+        /* ==========================================================================
+           QUIZ SUBMISSION & RESULTS
+           ========================================================================== */
+        function submitQuiz() {
+            clearInterval(currentQuiz.timerInterval);
+
+            let correctCount = 0;
+            let totalQuestions = currentQuiz.questions.length;
+
+            const reviewList = document.getElementById('solutionsReviewList');
+            reviewList.innerHTML = '';
+
+            currentQuiz.questions.forEach((q, idx) => {
+                const userAns = currentQuiz.answers[idx];
+                const isCorrect = userAns === q.correct;
+                if (isCorrect) correctCount++;
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/20 border-emerald-800/40' : 'bg-rose-950/20 border-rose-800/40'}`;
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <span class="text-xs font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'} uppercase">Q${idx + 1}: ${isCorrect ? 'Correct' : 'Incorrect / Skipped'}</span>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-200 mt-1">${q.q}</p>
+                    <div class="text-xs text-slate-400 mt-2 space-y-1">
+                        <div>Your Answer: <span class="font-medium ${isCorrect ? 'text-emerald-300' : 'text-rose-300'}">${userAns !== undefined ? q.options[userAns] : 'None'}</span></div>
+                        <div>Correct Answer: <span class="font-medium text-emerald-400">${q.options[q.correct]}</span></div>
+                        <div class="pt-1 text-slate-300 border-t border-slate-800/50 mt-2"><strong>Explanation:</strong> ${q.explanation}</div>
+                    </div>
+                `;
+                reviewList.appendChild(card);
+            });
+
+            const accuracy = Math.round((correctCount / totalQuestions) * 100);
+            const xpEarned = (correctCount * 20) + (accuracy > 80 ? 50 : 0);
+            const timeSpentSec = (currentQuiz.questions.length * 60) - currentQuiz.timeRemaining;
+            const timeSpentFormatted = `${Math.floor(timeSpentSec / 60)}m ${timeSpentSec % 60}s`;
+
+            // Update user state
+            state.xp += xpEarned;
+            state.history.unshift({
+                date: new Date().toLocaleDateString(),
+                title: currentQuiz.categoryObj.title,
+                category: currentQuiz.categoryObj.category,
+                score: `${correctCount}/${totalQuestions}`,
+                accuracy: accuracy,
+                xp: xpEarned
+            });
+            saveState();
+
+            // Populate Result UI
+            document.getElementById('resultTestTitle').innerText = currentQuiz.categoryObj.title;
+            document.getElementById('resultScore').innerText = `${correctCount} / ${totalQuestions}`;
+            document.getElementById('resultAccuracy').innerText = `${accuracy}%`;
+            document.getElementById('resultTimeSpent').innerText = timeSpentFormatted;
+            document.getElementById('resultXPEarned').innerText = `+${xpEarned} XP`;
+
+            playSound(accuracy >= 50 ? 'win' : 'wrong');
+            navigateTo('results');
+        }
+
+        /* ==========================================================================
+           ANALYTICS & SHOP & LEADERBOARD
+           ========================================================================== */
+        function renderAnalytics() {
+            // Render History Table
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            if (state.history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No test attempts logged yet.</td></tr>`;
+            } else {
+                state.history.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-800/30 transition";
+                    tr.innerHTML = `
+                        <td class="p-3 text-slate-400">${item.date}</td>
+                        <td class="p-3 font-semibold text-slate-200">${item.title}</td>
+                        <td class="p-3 uppercase text-xs text-indigo-400 font-bold">${item.category}</td>
+                        <td class="p-3 font-bold">${item.score}</td>
+                        <td class="p-3 text-emerald-400 font-bold">${item.accuracy}%</td>
+                        <td class="p-3 text-purple-400 font-bold">+${item.xp} XP</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Render SVG Accuracy Chart
+            const chartBox = document.getElementById('accuracyChartContainer');
+            if (state.history.length < 2) {
+                chartBox.innerHTML = `<p class="text-sm text-slate-500">Complete at least 2 tests to display accuracy trend chart.</p>`;
+            } else {
+                const points = state.history.slice(0, 6).reverse().map((h, i) => {
+                    const x = (i / 5) * 280 + 20;
+                    const y = 180 - (h.accuracy / 100) * 140;
+                    return `${x},${y}`;
+                }).join(' ');
+
+                chartBox.innerHTML = `
+                    <svg class="w-full h-full" viewBox="0 0 320 200">
+                        <polyline fill="none" stroke="#6366f1" stroke-width="3" points="${points}" />
+                    </svg>
+                `;
+            }
+
+            // Subject Proficiency
+            const profBox = document.getElementById('subjectProficiencyList');
+            profBox.innerHTML = `
+                <div>
+                    <div class="flex justify-between text-xs mb-1"><span>JEE / NEET Science</span><span class="text-indigo-400">85%</span></div>
+                    <div class="w-full bg-slate-800 rounded-full h-2"><div class="bg-indigo-500 h-2 rounded-full" style="width: 85%"></div></div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-1"><span>Full-Stack Web Dev</span><span class="text-purple-400">92%</span></div>
+                    <div class="w-full bg-slate-800 rounded-full h-2"><div class="bg-purple-500 h-2 rounded-full" style="width: 92%"></div></div>
+                </div>
+            `;
+        }
+
+        const shopCatalog = [
+            { id: 'freeze', name: 'Streak Freeze', cost: 150, icon: 'fa-snowflake', desc: 'Protects streak if you miss 1 day.' },
+            { id: 'avatar_gold', name: 'Golden Scholar Avatar', cost: 300, icon: 'fa-user-ninja', desc: 'Exclusive profile flair.' },
+            { id: 'theme_neon', name: 'Cyberpunk Neon Theme', cost: 500, icon: 'fa-wand-magic-sparkles', desc: 'Unlocks dynamic glow styling.' }
+        ];
+
+        function renderShop() {
+            const grid = document.getElementById('shopItemsGrid');
+            grid.innerHTML = '';
+
+            shopCatalog.forEach(item => {
+                const isOwned = state.unlockedItems.includes(item.id);
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-xl";
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid ${item.icon}"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-100">${item.name}</h4>
+                        <p class="text-xs text-slate-400">${item.desc}</p>
+                    </div>
+                    <div class="pt-5 border-t border-slate-800 mt-4 flex items-center justify-between">
+                        <span class="text-sm font-bold text-amber-400">${item.cost} XP</span>
+                        <button onclick="buyShopItem('${item.id}', ${item.cost})" ${isOwned ? 'disabled' : ''} class="px-4 py-1.5 rounded-lg text-xs font-semibold ${isOwned ? 'bg-slate-800 text-slate-500' : 'bg-indigo-600 hover:bg-indigo-500 text-white'} transition">
+                            ${isOwned ? 'Unlocked' : 'Buy'}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function buyShopItem(id, cost) {
+            if (state.xp >= cost) {
+                state.xp -= cost;
+                state.unlockedItems.push(id);
+                saveState();
+                playSound('win');
+                showToast("Item successfully unlocked!");
+                renderShop();
+            } else {
+                playSound('wrong');
+                showToast("Not enough XP!");
+            }
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '';
+
+            const dummyRanks = [
+                { name: 'Alex M.', xp: 2450, rank: 1, badge: 'Grandmaster' },
+                { name: 'Priya R.', xp: 1980, rank: 2, badge: 'Master' },
+                { name: 'You', xp: state.xp, rank: 3, badge: `Lvl ${state.level}` },
+                { name: 'David K.', xp: 1200, rank: 4, badge: 'Scholar' }
+            ];
+
+            dummyRanks.forEach(r => {
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-xl border flex items-center justify-between ${r.name === 'You' ? 'bg-indigo-950/40 border-indigo-500/50' : 'bg-slate-800/40 border-slate-700/50'}`;
+                item.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <span class="w-8 h-8 rounded-full bg-slate-800 text-indigo-400 font-black flex items-center justify-center text-sm">#${r.rank}</span>
+                        <div>
+                            <div class="font-bold text-slate-100 text-sm">${r.name}</div>
+                            <div class="text-xs text-slate-400">${r.badge}</div>
+                        </div>
+                    </div>
+                    <span class="font-extrabold text-indigo-400 text-sm">${r.xp} XP</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function claimDailyStreak() {
+            const today = new Date().toDateString();
+            if (state.lastStreakDate === today) {
+                showToast("Daily streak already claimed today!");
+                return;
+            }
+            state.streak++;
+            state.xp += 50;
+            state.lastStreakDate = today;
+            saveState();
+            playSound('win');
+            showToast("Daily Bonus Claimed! +50 XP");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        /* ==========================================================================
+           INIT ON LOAD
+           ========================================================================== */
+        window.onload = function() {
+            loadState();
+            renderCategories('all');
+        };
+    </script>
+</body>
+</html>
